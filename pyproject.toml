@@ -8,6 +8,10 @@ version = "0.1.0"
 description = "A simple Python logging library"
 readme = "README.md"
 requires-python = ">=3.10"
+dependencies = [
+    "build>=1.4.0",
+    "twine>=6.2.0",
+]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

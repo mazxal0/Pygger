@@ -1,15 +1,15 @@
 from pygger import Logger, LogLevel
 
-pygger = Logger(name='pyg')
+pygger = Logger(name='pygger')
 
 pygger.log(message="Hello World!", level=LogLevel.WARNING)
 
-
-@pygger.time(precision=2)
-def add(n):
-    return [1e10 for _ in range(n)]
+pygger.error(message="Error, it's not good")
 
 
-add(1000)
-add(30000)
-add(50000022)
+@pygger.trace
+def add(a: int, b: int) -> int:
+    return a + b
+
+
+add(10, 5)
