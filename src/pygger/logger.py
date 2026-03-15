@@ -1,37 +1,39 @@
 from time import time
-from typing import Optional
+from typing import Optional, List
 from functools import wraps
 import inspect
 
+from .handlers.base import BaseHandler
 from .levels import LogLevel
 from .record import Record
-from .formatter import Formatter
 
 
 class Logger:
     def __init__(
             self,
             name: str,
-            template: Optional[str] = None,
-            use_color: bool = True,
+            handlers: Optional[List[BaseHandler]] = None,
+            enabled: bool = True,
     ):
         self.name = name
-        self.formatter = Formatter(template=template, use_color=use_color)
-        self._enabled = True
+        self.handlers = handlers or []
+        self._enabled = enabled
 
     def __call__(self, message: str, level: LogLevel = LogLevel.INFO):
         self.log(message, level)
 
     def log(self, message: str, level: LogLevel = LogLevel.INFO):
+        if not self.enabled:
+            return
+
         record = Record(
             name=self.name,
             message=message,
             level=level,
         )
 
-        form_record = self.formatter(record)
-
-        print(form_record)
+        for handler in self.handlers:
+            handler(record)
 
     def info(self, message: str):
         self.log(message, LogLevel.INFO)
