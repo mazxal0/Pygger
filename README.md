@@ -5,7 +5,7 @@ This is python logger for my education project
 I decide to create own logger because in the near future I want to start write own library of algorithms and structure of data, and so I need to custom logger
 
 ### Current version
-0.1.0
+0.1.2
 
 ## Realization
 - Log of levels: (Debug, Info and etc)

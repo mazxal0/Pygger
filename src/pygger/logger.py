@@ -1,6 +1,7 @@
 from time import time
 from typing import Optional
 from functools import wraps
+import inspect
 
 from .levels import LogLevel
 from .record import Record
@@ -11,10 +12,11 @@ class Logger:
     def __init__(
             self,
             name: str,
-            template: Optional[str] = None
+            template: Optional[str] = None,
+            use_color: bool = True,
     ):
         self.name = name
-        self.formatter = Formatter(template=template)
+        self.formatter = Formatter(template=template, use_color=use_color)
         self._enabled = True
 
     def __call__(self, message: str, level: LogLevel = LogLevel.INFO):
@@ -50,6 +52,10 @@ class Logger:
     def enabled(self):
         return self._enabled
 
+    @enabled.setter
+    def enabled(self, enabled: bool):
+        self._enabled = enabled
+
     def turn(self, enabled: bool):
         self._enabled = enabled
 
@@ -58,7 +64,12 @@ class Logger:
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
             if self.enabled:
-                self.info(f'Calling the function {func.__name__}')
+                sig = inspect.signature(func)
+                bound = sig.bind(*args, **kwargs)
+                bound.apply_defaults()
+
+                params = ", ".join(f"{k}={v}" for k, v in bound.arguments.items())
+                self.info(f'Calling the function {func.__name__}({params})')
             return result
 
         return wrapper
@@ -78,3 +89,14 @@ class Logger:
             return wrapper
 
         return decorator
+
+    def trace_class(self, cls):
+        funcs = inspect.getmembers(cls, predicate=inspect.isfunction)
+
+        for name, func in funcs:
+            if name.startswith('__') and name.endswith('__'):
+                continue
+            decorated = self.trace(func)
+            setattr(cls, name, decorated)
+
+        return cls
